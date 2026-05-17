@@ -1,0 +1,135 @@
+# 📘 Documentação Oficial: Agente de Análise de Desempenho & Dashboard Automatizado
+**Versão:** 1.0 | **Data:** 18/05/2026 | **Autor:** Equipe de Desenvolvimento
+
+---
+
+## 🎯 1. Objetivo do Projeto
+Automatizar a coleta, análise e visualização de dados de entregas da equipe de desenvolvimento de chatbot. O sistema transforma uma planilha bruta em um **relatório executivo interativo**, pronto para ser compartilhado com gestores, sem necessidade de intervenção manual ou conhecimentos técnicos avançados.
+
+---
+
+## 🏗️ 2. Arquitetura do Sistema
+O projeto segue o princípio de **Separação de Responsabilidades** (*Separation of Concerns*), dividindo o fluxo em duas camadas independentes:
+
+| Camada | Tecnologia | Responsabilidade |
+|--------|------------|------------------|
+| **Backend / Agente** | Python (`pandas`, `openai`) | Lê CSV, calcula métricas, chama IA, estrutura dados e exporta `dashboard_data.js` |
+| **Frontend / Dashboard** | HTML5 + CSS3 + JavaScript (`Chart.js`) | Consome `dashboard_data.js`, renderiza KPIs, gráficos, cards e tabelas de forma dinâmica |
+| **Ponte de Dados** | `dashboard_data.js` | Arquivo JSON formatado como variável JS. Garante que o HTML nunca precise conter dados fixos (mocks) |
+
+```
+entregas_chatbot.csv  →  [agente.py]  →  dashboard_data.js  →  [dashboard.html]  →  Navegador / PDF
+        ↑                     ↑                     ↑                     ↑
+   Dados brutos        Processamento + IA      Dados estruturados     Visualização interativa
+```
+
+---
+
+## 📁 3. Estrutura de Arquivos
+```
+projeto-dashboard/
+├── entregas_chatbot.csv      # Dados brutos da equipe (entrada)
+├── prompt.txt                # Instruções qualitativas para a IA
+├── agente.py                 # Notebook/célula Python (processamento)
+├── dashboard_data.js         # Gerado automaticamente pelo agente (ponte)
+├── dashboard.html            # Interface visual (frontend)
+└── relatorio_YYYY-MM-DD.txt  # Backup do texto bruto da IA (opcional)
+```
+> 💡 **Regra de Ouro:** `dashboard.html` e `dashboard_data.js` **devem estar na mesma pasta** para funcionar corretamente.
+
+---
+
+## 🔄 4. Fluxo de Execução (Passo a Passo)
+
+### ✅ Pré-requisitos
+1. Conta no [Google Colab](https://colab.research.google.com) (gratuita)
+2. Conta na [OpenAI Platform](https://platform.openai.com) com chave de API
+3. Arquivo CSV com as colunas: `data, desenvolvedor, tarefa, status, tempo_estimado, tempo_real, entregas, bugs`
+
+### 🚀 Como Rodar
+1. **No Colab:**
+   - Abra um novo notebook.
+   - Instale as dependências: `!pip install openai pandas matplotlib`
+   - Salve sua chave OpenAI no Colab Secrets (`🔑 > Add secret > nome: Agente_Teste_Dashboard`)
+   - Cole o código do `agente.py` em uma célula.
+   - Faça upload do `entregas_chatbot.csv` e `prompt.txt` no ícone 📁 lateral.
+   - Execute a célula.
+
+2. **Geração dos Arquivos:**
+   - O agente criará automaticamente `dashboard_data.js` e `relatorio_*.txt`.
+   - Baixe `dashboard_data.js` e `dashboard.html`.
+
+3. **Visualização:**
+   - Coloque os dois arquivos na **mesma pasta** no seu computador.
+   - Dê dois cliques em `dashboard.html`. Ele abrirá no navegador com todos os dados reais.
+   - Clique em `🖨️ Imprimir / Salvar PDF` para exportar.
+
+---
+
+## 🛠️ 5. Personalização e Manutenção
+
+| O que mudar | Onde alterar | Como fazer |
+|-------------|--------------|------------|
+| **Tom, estrutura ou métricas do relatório** | `prompt.txt` | Edite apenas este arquivo. O HTML não precisa ser tocado. |
+| **Cores, fontes ou layout** | `dashboard.html` (bloco `<style>`) | Altere variáveis CSS (`--primary`, `--bg`, etc.) ou adicione novas classes. |
+| **Novos gráficos ou KPIs** | `agente.py` + `dashboard.html` | 1. Calcule no Python e adicione ao `payload`. 2. Crie novo `<canvas>` no HTML e inicialize com `new Chart()`. |
+| **Modelo de IA** | `agente.py` | Troque `model="gpt-4o-mini"` por `gpt-4o`, `claude-3-5-sonnet`, etc. |
+| **Fonte de dados** | `agente.py` | Substitua `pd.read_csv()` por `gspread`, `sqlalchemy` ou API REST. |
+
+---
+
+## 📜 6. Histórico de Evolução (O que foi feito)
+| Versão | Mudança Principal | Motivo |
+|--------|-------------------|--------|
+| `v0.1` | CSV → Python → `.txt` | Validação inicial do fluxo de IA |
+| `v0.2` | Adição de `matplotlib` para gráfico de barras | Gestores solicitaram visualização por desenvolvedor |
+| `v0.3` | HTML único com CSS/JS embutido + `base64` | Facilidade de compartilhamento |
+| `v1.0` | **Separação Agente/HTML** + `dashboard_data.js` + Chart.js + **Remoção de mocks** | Solicitação de arquitetura profissional, escalável e 100% dinâmica |
+
+---
+
+## 🔍 7. Solução de Problemas (Troubleshooting)
+
+| Sintoma | Causa Provável | Solução |
+|---------|----------------|---------|
+| `⚠️ dashboard_data.js não encontrado` | Arquivo não está na mesma pasta ou não foi gerado | Rode `agente.py` novamente e verifique se o JS foi baixado |
+| Gráficos não carregam | Navegador bloqueou script local por segurança | Abra a pasta via terminal e rode `python -m http.server` ou use extensão Live Server |
+| Relatório com placeholders `[Insira aqui]` | CSV vazio ou colunas com nomes diferentes | Verifique cabeçalhos exatos e se há dados nas linhas abaixo |
+| `ModuleNotFoundError: openai` | Dependência não instalada no Colab | Rode `!pip install openai pandas matplotlib` no topo |
+| Gráfico distorcido ou com `NaN` | Coluna numérica contém textos ou vazios | O agente já aplica `pd.to_numeric(..., errors='coerce')`, mas prefira números puros no CSV |
+
+---
+
+## 🔐 8. Boas Práticas & Segurança
+- ✅ **Nunca inclua chaves de API no HTML ou em repositórios públicos.**
+- ✅ Mantenha `prompt.txt` versionado (`prompt_v1.txt`, `prompt_v2.txt`...) para rastrear mudanças.
+- ✅ Valide o relatório gerado antes de enviar à diretoria.
+- ✅ Use nomes de colunas em minúsculas, sem acentos ou espaços.
+- ✅ Faça backup do `dashboard_data.js` se quiser manter histórico de sprints.
+
+---
+
+## 🚀 9. Próximos Passos Sugeridos
+1. **Publicação Web:** Hospedar `dashboard.html` no Netlify Drop ou GitHub Pages para acesso via link.
+2. **Agendamento Automático:** Usar Google Apps Script ou GitHub Actions para rodar o agente toda sexta às 18h.
+3. **Envio por E-mail/Slack:** Script Python que anexa o `.html` ou `.pdf` e dispara para lista de gestores.
+4. **Integração MCP (Futuro):** Conectar o agente diretamente ao Jira, Linear ou banco de dados corporativo usando o Model Context Protocol.
+
+---
+
+## 📖 10. Glossário para Iniciantes
+| Termo | Significado |
+|-------|-------------|
+| **API** | Interface que permite que programas conversem entre si (ex: Python ↔ OpenAI) |
+| **KPI** | Indicador-chave de desempenho (ex: % de conclusão, bugs resolvidos) |
+| **JSON/JS Bridge** | Formato padronizado para transportar dados entre backend e frontend |
+| **Chart.js** | Biblioteca JavaScript que transforma dados em gráficos interativos |
+| **Separation of Concerns** | Prática de dividir código em partes independentes para facilitar manutenção |
+| **Mock Data** | Dados falsos usados apenas para testar layout (já removidos nesta versão) |
+
+---
+
+📌 **Suporte & Evolução:**  
+Este documento deve ser atualizado sempre que novas funcionalidades forem adicionadas. Mantenha-o na raiz do projeto junto com os arquivos.
+
+✅ *Se precisar de uma versão em PDF, template de apresentação para a diretoria, ou script de automação por e-mail, é só solicitar. O projeto já está pronto para escala.* 🛠️✨
